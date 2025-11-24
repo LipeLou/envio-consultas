@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+.venv
+
+# Arquivos de ambiente
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+
+# Dados sensíveis
+data/*.xls
+data/*.xlsx
+data/*.csv
+data/email.csv
+data/consultas.*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Manter estrutura de diretórios
+!data/.gitkeep
+!logs/.gitkeep
