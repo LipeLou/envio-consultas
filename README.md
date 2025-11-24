@@ -69,12 +69,12 @@ pip install -r requirements.txt
 
 O sistema utiliza SMTP do Gmail por padrão. Para configurar as credenciais:
 
-1. Copie o arquivo de exemplo:
+1. Crie um arquivo `.env` na raiz do projeto:
 ```bash
-cp .env.example .env
+touch .env
 ```
 
-2. Edite o arquivo `.env` e adicione suas credenciais:
+2. Edite o arquivo `.env` e adicione sua senha:
 ```env
 EMAIL_SENHA=sua_app_password_aqui
 ```
@@ -167,7 +167,6 @@ python test.py 5  # Processa 5 titulares
 ├── main.py                  # Script principal
 ├── test.py                  # Script de teste
 ├── requirements.txt          # Dependências Python
-├── .env.example            # Exemplo de arquivo de configuração
 ├── README.md               # Este arquivo
 ├── src/                    # Código fonte
 │   ├── __init__.py
