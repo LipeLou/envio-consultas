@@ -336,11 +336,12 @@ python test.py
 
 Este projeto está sob a licença MIT. Consulte o arquivo `LICENSE` para mais detalhes.
 
-## Agradecimentos
+## Ferramentas
 
 - [pandas](https://pandas.pydata.org/) - Processamento de dados
-- [openpyxl](https://openpyxl.readthedocs.io/) - Leitura de arquivos Excel
-- [xlrd](https://xlrd.readthedocs.io/) - Leitura de arquivos .xls
+- [openpyxl](https://openpyxl.readthedocs.io/) - Leitura de arquivos Excel (.xlsx)
+- [xlrd](https://xlrd.readthedocs.io/) - Leitura de arquivos Excel (.xls)
+- [python-dotenv](https://github.com/theskumar/python-dotenv) - Gerenciamento de variáveis de ambiente
 
 ## Suporte
 
