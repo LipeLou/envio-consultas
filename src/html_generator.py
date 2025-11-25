@@ -4,7 +4,7 @@ Gerador de HTML para emails de consultas
 import logging
 from typing import List
 from src.xlsx_parser import Titular, Beneficiario, Consulta
-from datetime import datetime
+from config.config import MES_RELATORIO
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +41,8 @@ def gerar_html_consultas(titular: Titular) -> str:
     Returns:
         String HTML formatada
     """
-    mes_atual = datetime.now().strftime("%B de %Y").title()
-    mes_atual = mes_atual.replace("January", "Janeiro").replace("February", "Fevereiro").replace("March", "Março")
-    mes_atual = mes_atual.replace("April", "Abril").replace("May", "Maio").replace("June", "Junho")
-    mes_atual = mes_atual.replace("July", "Julho").replace("August", "Agosto").replace("September", "Setembro")
-    mes_atual = mes_atual.replace("October", "Outubro").replace("November", "Novembro").replace("December", "Dezembro")
+    # Usar mês configurado manualmente
+    mes_atual = MES_RELATORIO
     
     html = f"""
 <!DOCTYPE html>

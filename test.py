@@ -21,6 +21,7 @@ config_original.EMAIL_SENHA = config.EMAIL_SENHA
 config_original.CSV_EMAILS_PATH = config.CSV_EMAILS_PATH
 config_original.IGNORE_VALUES = config.IGNORE_VALUES
 config_original.XLSX_CONSULTAS_PATH = config.XLSX_CONSULTAS_PATH
+config_original.MES_RELATORIO = config.MES_RELATORIO
 
 # Importar funções para ler emails e fazer match (apenas para verificação no log)
 from src.email_utils import ler_emails_csv, normalizar_nome

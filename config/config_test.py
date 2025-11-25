@@ -33,3 +33,7 @@ IGNORE_VALUES = ["inrrelevante", "Evento", "Prestador", "", "nan", "NaN", "None"
 # Configurações de logging
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 
+# Configurações de relatório
+# Mês/ano a ser exibido no relatório (formato: "Novembro de 2024")
+MES_RELATORIO = "Mẽs de 2025"  # ALTERE AQUI: Configure o mês/ano do relatório
+
