@@ -192,13 +192,15 @@ python test.py 5  # Processa 5 titulares
 
 > **Importante:** Este sistema foi desenvolvido para processar relatórios no formato padrão da UNIMED. O arquivo Excel de entrada deve seguir a estrutura de relatórios fornecidos pela UNIMED.
 
-O arquivo Excel (.xls ou .xlsx) deve apresentar a seguinte estrutura:
+O arquivo Excel (.xls ou .xlsx) apresenta a seguinte estrutura:
 
 | Evento | Unnamed | Gp. Ap. | Doc. Finan. | Contrato Financeiro |
 |--------|---------|---------|-------------|---------------------|
+| Prestador | Qtde | Dt. Real. | Servico | Total Cobr. |
 | Cód Titular: 123456 - NOME TITULAR | | | | |
 | Beneficiário: 123456 - NOME BENEFICIÁRIO (00) | | | | |
-| NOME PRESTADOR | 1 | 01/01/2024 | Consulta | 150.00 |
+| 12345 |---------| Servicos Diversos | 12345 |123456000 |
+| NOME PRESTADOR | 1 | 01/01/2024 | 12345 - Consulta | 150.00 |
 
 #### Padrões Reconhecidos
 
