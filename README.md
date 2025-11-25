@@ -94,7 +94,15 @@ Edite o arquivo `config/config.py` e altere o email remetente:
 EMAIL_REMETENTE = "seu_email@gmail.com"
 ```
 
-### 3. Configurar Arquivos de Dados
+### 3. Configurar Mês do Relatório
+
+Edite o arquivo `config/config.py` e configure o mês/ano que será exibido no relatório:
+
+```python
+MES_RELATORIO = "Mês de Ano"  # ALTERE AQUI: Configure o mês/ano do relatório
+```
+
+### 4. Configurar Arquivos de Dados
 
 Coloque os arquivos necessários nos diretórios apropriados:
 
@@ -110,7 +118,7 @@ MARIA SANTOS;maria@example.com;
 
 **Observação:** O sistema prioriza "E-MAIL PRINCIPAL" e utiliza "OUTRO E-MAIL" como alternativa.
 
-### 4. Personalizar Caminhos (Opcional)
+### 5. Personalizar Caminhos (Opcional)
 
 Se necessário, ajuste os caminhos no arquivo `config/config.py`:
 
