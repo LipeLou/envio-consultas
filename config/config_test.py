@@ -6,19 +6,32 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente do arquivo .env (se existir)
 load_dotenv()
 
-# Configurações de Email (TESTE - substitua pelo seu email pessoal)
+# CONFIGURE AQUI!
+# ------------------------------------------------------------
+
+# Configurações de Email (TESTE - substitua pelo seu email teste)
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-EMAIL_REMETENTE = "seu_email_teste@gmail.com"  # ALTERE AQUI: Configure seu email para testes
+EMAIL_REMETENTE = "seu_email_remetente@gmail.com"  # ALTERE AQUI: Configure seu email para testes
 
-# Senha do email (será lida do arquivo .env)
-EMAIL_SENHA = os.getenv("EMAIL_SENHA", "")
+# Mês/ano a ser exibido no relatório
+MES_RELATORIO = "Mẽs teste"  # ALTERE AQUI: Configure o mês/ano do relatório
 
 # Email de teste - SUBSTITUA PELO SEU EMAIL PESSOAL
 EMAIL_TESTE = "seu_email_pessoal@gmail.com"  # ALTERE AQUI: Configure seu email pessoal para receber testes
+
+# ------------------------------------------------------------
+
+
+
+
+
+
+
+# Senha do email (será lida do arquivo .env)
+EMAIL_SENHA = os.getenv("EMAIL_SENHA", "")
 
 # Caminhos dos arquivos
 BASE_DIR = Path(__file__).parent.parent  # Voltar para a raiz do projeto
@@ -32,8 +45,4 @@ IGNORE_VALUES = ["inrrelevante", "Evento", "Prestador", "", "nan", "NaN", "None"
 
 # Configurações de logging
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-
-# Configurações de relatório
-# Mês/ano a ser exibido no relatório (formato: "Novembro de 2024")
-MES_RELATORIO = "Mẽs teste"  # ALTERE AQUI: Configure o mês/ano do relatório
 
