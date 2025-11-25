@@ -20,8 +20,8 @@ Sistema automatizado para processar planilhas Excel (.xls ou .xlsx) com consulta
 - [Modo de Teste](#modo-de-teste)
 - [Logs](#logs)
 - [Tratamento de Erros](#tratamento-de-erros)
-- [Contribuindo](#contribuindo)
-- [Licença](#licença)
+- [Ferramentas](#ferramentas)
+- [Suporte](#suporte)
 
 ## Características
 
@@ -46,7 +46,7 @@ Sistema automatizado para processar planilhas Excel (.xls ou .xlsx) com consulta
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/nome-do-repositorio.git
+git clone https://github.com/lipelou/envio-consultas
 cd nome-do-repositorio
 ```
 
@@ -54,7 +54,7 @@ cd nome-do-repositorio
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate  # No Windows: venv\Scripts\activate
+venv\Scripts\activate # Linux/Mac: source venv/bin/activate
 ```
 
 ### 3. Instale as dependências
@@ -78,8 +78,6 @@ touch .env
 ```env
 EMAIL_SENHA=sua_app_password_aqui
 ```
-
-**Importante:** O arquivo `.env` não é versionado e contém informações sensíveis. Nunca compartilhe ou faça commit deste arquivo.
 
 #### Como obter App Password do Gmail
 
@@ -192,13 +190,15 @@ python test.py 5  # Processa 5 titulares
 
 > **Importante:** Este sistema foi desenvolvido para processar relatórios no formato padrão da UNIMED. O arquivo Excel de entrada deve seguir a estrutura de relatórios fornecidos pela UNIMED.
 
-O arquivo Excel (.xls ou .xlsx) deve apresentar a seguinte estrutura:
+O arquivo Excel (.xls ou .xlsx) apresenta a seguinte estrutura:
 
 | Evento | Unnamed | Gp. Ap. | Doc. Finan. | Contrato Financeiro |
 |--------|---------|---------|-------------|---------------------|
+| Prestador | Qtde | Dt. Real. | Servico | Total Cobr. |
 | Cód Titular: 123456 - NOME TITULAR | | | | |
 | Beneficiário: 123456 - NOME BENEFICIÁRIO (00) | | | | |
-| NOME PRESTADOR | 1 | 01/01/2024 | Consulta | 150.00 |
+| 12345 |---------| Servicos Diversos | 12345 |123456000 |
+| NOME PRESTADOR | 1 | 01/01/2024 | 12345 - Consulta | 150.00 |
 
 #### Padrões Reconhecidos
 
@@ -302,39 +302,6 @@ O sistema trata automaticamente os seguintes cenários:
 - Múltiplos encodings de CSV (tenta automaticamente)
 - Nomes não encontrados (com logging detalhado)
 
-## Contribuindo
-
-Contribuições são bem-vindas. Para contribuir:
-
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-### Desenvolvimento
-
-Para contribuir com o código:
-
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/nome-do-repositorio.git
-
-# Crie um ambiente virtual
-python3 -m venv venv
-source venv/bin/activate
-
-# Instale as dependências
-pip install -r requirements.txt
-
-# Execute os testes
-python test.py
-```
-
-## Licença
-
-Este projeto está sob a licença MIT. Consulte o arquivo `LICENSE` para mais detalhes.
-
 ## Ferramentas
 
 - [pandas](https://pandas.pydata.org/) - Processamento de dados
@@ -350,6 +317,5 @@ Em caso de problemas, verifique:
 2. Se o arquivo Excel está no formato esperado
 3. Se os nomes no Excel correspondem aos nomes no CSV
 4. Os logs em `logs/envio_emails.log` para detalhes de erros
-5. Abra uma [Issue](https://github.com/seu-usuario/nome-do-repositorio/issues) no GitHub
 
 ---
