@@ -175,12 +175,11 @@ def gerar_html_consultas(titular: Titular) -> str:
             # Calcular valor total da consulta
             try:
                 qtd = float(str(consulta.quantidade).replace(",", ".")) if consulta.quantidade else 1.0
-                valor_unit = float(str(consulta.valor).replace(",", ".")) if consulta.valor else 0.0
-                valor_total = qtd * valor_unit
-                total_beneficiario += valor_total
-                total_geral += valor_total
+                valor = float(str(consulta.valor).replace(",", ".")) if consulta.valor else 0.0
+                total_beneficiario += valor
+                total_geral += valor
             except:
-                valor_total = 0.0
+                valor = 0.0
             
             html += f"""
                     <tr>
