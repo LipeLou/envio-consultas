@@ -6,8 +6,11 @@ Suporta arquivos Excel (.xls ou .xlsx)
 """
 import logging
 import sys
+import csv
+import datetime
 from pathlib import Path
 from typing import Dict, Optional
+
 
 # Importar configurações de teste ANTES de importar outros módulos
 from config import config_test as config
@@ -141,6 +144,9 @@ def processar_e_enviar_teste(caminho_xlsx: Path, caminho_csv: Optional[Path] = N
     emails_falhados = 0
     titulares_sem_consultas = 0
     
+    # Lista de erros para relatório (teste)
+    erros_relatorio = []
+    
     # Processar cada titular (limitado)
     for idx, titular in enumerate(titulares_teste, 1):
         # Buscar email real do titular para verificação
@@ -161,6 +167,12 @@ def processar_e_enviar_teste(caminho_xlsx: Path, caminho_csv: Optional[Path] = N
             logger.info(f"\n[{idx}/{total_titulares}] TESTE - Processando titular: {titular.nome} ({email_real_titular})")
         else:
             logger.warning(f"\n[{idx}/{total_titulares}] TESTE - Processando titular: {titular.nome} (⚠️ EMAIL NÃO ENCONTRADO NO CSV)")
+            erros_relatorio.append({
+                "titular": titular.nome,
+                "motivo": "Email não encontrado (Teste)",
+                "detalhe": "Email não encontrado no CSV",
+                "email": ""
+            })
         
         # Verificar se titular tem consultas
         total_consultas = sum(len(b.consultas) for b in titular.beneficiarios)
@@ -183,6 +195,12 @@ def processar_e_enviar_teste(caminho_xlsx: Path, caminho_csv: Optional[Path] = N
         except Exception as e:
             logger.error(f"  - Erro ao gerar HTML: {e}")
             emails_falhados += 1
+            erros_relatorio.append({
+                "titular": titular.nome,
+                "motivo": "Erro na geração do HTML (Teste)",
+                "detalhe": str(e),
+                "email": email_real_titular if email_real_titular else ""
+            })
             continue
         
         # Enviar email para o email de teste
@@ -195,7 +213,29 @@ def processar_e_enviar_teste(caminho_xlsx: Path, caminho_csv: Optional[Path] = N
         else:
             emails_falhados += 1
             logger.error(f"  - ✗ Falha ao enviar email de TESTE")
+            erros_relatorio.append({
+                "titular": titular.nome,
+                "motivo": "Falha no envio SMTP (Teste)",
+                "detalhe": f"Destino: {config.EMAIL_TESTE}",
+                "email": email_real_titular if email_real_titular else ""
+            })
     
+    # Gerar relatório de erros se houver falhas (mesmo em teste)
+    if erros_relatorio:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        arquivo_relatorio = config.LOGS_DIR / f"nao_enviados_TESTE_{timestamp}.csv"
+        
+        try:
+            with open(arquivo_relatorio, mode='w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=["titular", "motivo", "detalhe", "email"])
+                writer.writeheader()
+                writer.writerows(erros_relatorio)
+            
+            logger.info(f"\n⚠️  Relatório de emails não enviados (TESTE) salvo em:")
+            logger.info(f"   -> {arquivo_relatorio}")
+        except Exception as e:
+            logger.error(f"Erro ao salvar relatório de erros: {e}")
+
     # Resumo final
     logger.info("\n" + "=" * 60)
     logger.info("RESUMO DO TESTE")
