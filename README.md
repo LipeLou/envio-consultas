@@ -18,7 +18,7 @@ Sistema automatizado para processar planilhas Excel (.xls ou .xlsx) com consulta
 - [Estrutura dos Arquivos](#estrutura-dos-arquivos)
 - [Como Funciona](#como-funciona)
 - [Modo de Teste](#modo-de-teste)
-- [Logs](#logs)
+- [Logs e Relatórios](#logs-e-relatorios)
 - [Tratamento de Erros](#tratamento-de-erros)
 - [Ferramentas](#ferramentas)
 - [Suporte](#suporte)
@@ -31,6 +31,7 @@ Sistema automatizado para processar planilhas Excel (.xls ou .xlsx) com consulta
 - Agrupamento automático de consultas por titular e beneficiário
 - Modo de teste para validação antes do envio em massa
 - Logging detalhado para rastreamento e depuração
+- Geração de relatório CSV de erros (emails não encontrados ou falhas de envio)
 - Tratamento robusto de erros e encoding
 - Suporte a múltiplos encodings de CSV
 
@@ -261,12 +262,14 @@ python test.py [limite]
 - Exibe no log o email real do titular (para verificação)
 - Não envia emails reais para os titulares
 
-## Logs
+## Logs e Relatórios
 
-O sistema gera logs em dois locais:
+O sistema gera logs e relatórios em dois formatos:
 
-1. **Console**: Saída em tempo real do processamento
-2. **Arquivo**: `logs/envio_emails.log` (produção) ou `logs/test_emails.log` (teste)
+### 1. Logs de Processamento (Texto)
+
+- **Console**: Saída em tempo real do processamento
+- **Arquivo**: `logs/envio_emails.log` (produção) ou `logs/test_emails.log` (teste)
 
 **Exemplo de saída:**
 ```
@@ -297,6 +300,19 @@ Emails falhados: 2
 Titulares sem email: 3
 ============================================================
 ```
+
+### 2. Relatório de Erros (CSV)
+
+Sempre que houver falhas no envio ou titulares sem email encontrado, o sistema gera automaticamente um arquivo CSV na pasta `logs/`.
+
+- **Formato do nome**: `nao_enviados_AAAA-MM-DD_HH-MM-SS.csv` (ou `nao_enviados_TESTE_...` no modo de teste)
+- **Conteúdo do CSV**:
+  - `titular`: Nome do titular
+  - `motivo`: Motivo da falha (ex: "Email não encontrado", "Falha no envio SMTP")
+  - `detalhe`: Informações adicionais (ex: nome normalizado buscado)
+  - `email`: Email tentado (se houver)
+
+Este relatório facilita a identificação e correção de cadastros faltantes ou incorretos.
 
 ## Tratamento de Erros
 
