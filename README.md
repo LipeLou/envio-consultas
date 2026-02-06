@@ -1,7 +1,8 @@
 # Sistema de Envio de Emails de Consultas
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Pandas](https://img.shields.io/badge/Pandas-1.3%2B-150458?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![Licença: MIT](https://img.shields.io/badge/Licen%C3%A7a-MIT-green.svg)](LICENSE)
 
 Sistema automatizado para processar planilhas Excel (.xls ou .xlsx) com consultas médicas e enviar emails HTML formatados para cada titular do plano de saúde.
 
@@ -343,3 +344,5 @@ Em caso de problemas, verifique:
 4. Os logs em `logs/envio_emails.log` para detalhes de erros
 
 ---
+
+**Desenvolvido para o SINTUNIFEI** | Sistema de Processamento de Declarações de IRPF
