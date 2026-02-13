@@ -88,12 +88,13 @@ EMAIL_SENHA=sua_app_password_aqui
 3. Gere uma "Senha de app" na seção "Senhas de app"
 4. Utilize essa senha no arquivo `.env`
 
-### 2. Configurar Email Remetente
+### 2. Configurar Email Remetente e Logo
 
-Edite o arquivo `config/config.py` e altere o email remetente:
+Edite o arquivo `config/config.py` e configure o email remetente e a URL da logo:
 
 ```python
 EMAIL_REMETENTE = "seu_email@gmail.com"
+LOGO_URL = "https://exemplo.com/sua-logo.png"  # Deixe vazio "" para não usar logo
 ```
 
 ### 3. Configurar Mês do Relatório
@@ -202,19 +203,25 @@ python test.py 5  # Processa 5 titulares
 
 O arquivo Excel (.xls ou .xlsx) apresenta a seguinte estrutura:
 
-| Evento | Unnamed | Gp. Ap. | Doc. Finan. | Contrato Financeiro |
-|--------|---------|---------|-------------|---------------------|
-| Prestador | Qtde | Dt. Real. | Servico | Total Cobr. |
-| Cód Titular: 123456 - NOME TITULAR | | | | |
-| Beneficiário: 123456 - NOME BENEFICIÁRIO (00) | | | | |
-| 12345 |---------| Servicos Diversos | 12345 |123456000 |
-| NOME PRESTADOR | 1 | 01/01/2024 | 12345 - Consulta | 150.00 |
+| Coluna A | Coluna B | Coluna C | Coluna D | Coluna E |
+|----------|----------|----------|----------|----------|
+| **Linha 1 (Evento)** | Código Evento | (Vazio) | Grupo Serviço | Doc. Finan. | Contrato |
+| **Linha 2 (Detalhe)** | Qtde | Dt. Real. | (Vazio) | Total Cobr. | (Vazio) |
+
+Exemplo visual:
+
+```text
+Cód Titular: 123456 - NOME TITULAR
+Beneficiário: 123456 - NOME BENEFICIÁRIO (00)
+8405240         |           | CONSULTAS | 59426.0     | 1.37...
+1,0000          | 04/12/2025|           | 59.95       |
+```
 
 #### Padrões Reconhecidos
 
 - **Titular**: `Cód Titular: [número] - NOME DO TITULAR`
 - **Beneficiário**: `Beneficiário: [número] - NOME DO BENEFICIÁRIO ([código])`
-- **Prestador**: Nome comum (sem prefixos especiais)
+- **Transação**: Bloco de duas linhas contendo código do evento, serviço, quantidade, data e valor.
 
 ### Arquivo CSV de Emails
 
@@ -233,10 +240,10 @@ MARIA SANTOS;maria@example.com;
 
 1. **Leitura do CSV**: O sistema lê o arquivo `email.csv` e cria um dicionário mapeando nomes normalizados para emails.
 
-2. **Processamento do Excel**: O sistema processa o arquivo Excel linha por linha:
+2. **Processamento do Excel**: O sistema processa o arquivo Excel varrendo as linhas:
    - Identifica titulares (linhas com "Cód Titular:")
    - Identifica beneficiários (linhas com "Beneficiário:")
-   - Identifica prestadores e suas consultas
+   - Identifica transações médicas (blocos de duas linhas com detalhes do evento)
    - Agrupa consultas por titular e beneficiário
 
 3. **Normalização de Nomes**: Os nomes são normalizados (uppercase, espaços removidos) para garantir correspondência consistente entre o arquivo Excel e o CSV.
@@ -244,7 +251,7 @@ MARIA SANTOS;maria@example.com;
 4. **Geração de HTML**: Para cada titular, o sistema gera um email HTML formatado contendo:
    - Nome do titular
    - Lista de beneficiários e suas consultas
-   - Detalhes de cada consulta (prestador, data, tipo, quantidade, valor)
+   - Detalhes de cada consulta (data, quantidade, valor)
    - Totais por beneficiário e total geral
 
 5. **Envio de Emails**: O sistema envia o email HTML para o endereço do titular encontrado no CSV via SMTP.
@@ -345,4 +352,4 @@ Em caso de problemas, verifique:
 
 ---
 
-**Desenvolvido para o SINTUNIFEI** | Sistema de Processamento de Declarações de IRPF
+**Desenvolvido para o SINTUNIFEI** | Sistema de Envio de Relatórios - **Consultas Unimed**.
