@@ -135,6 +135,135 @@ def is_prestador(linha: pd.Series, coluna_evento: int, coluna_quantidade: int,
     return tem_dados
 
 
+def is_numero(valor: str) -> bool:
+    """Verifica se um valor é numérico (string, int, float)"""
+    if valor is None or (isinstance(valor, float) and pd.isna(valor)):
+        return False
+    try:
+        float(str(valor).replace(",", ".").strip())
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
+def is_cabecalho_detalhe(linha: pd.Series, coluna_quantidade: int, coluna_data: int, coluna_valor: int) -> bool:
+    """Detecta linha de cabeçalho repetida no detalhe (Qtde/Dt. Real/Total Cobr.)"""
+    def _cell(idx: int) -> str:
+        return str(linha.iloc[idx]).strip() if len(linha) > idx and not pd.isna(linha.iloc[idx]) else ""
+
+    qtd = _cell(coluna_quantidade).upper()
+    data = _cell(coluna_data).upper()
+    valor = _cell(coluna_valor).upper()
+
+    if qtd == "QTDE":
+        return True
+    if data.startswith("DT.") or data == "DT. REAL.":
+        return True
+    if "TOTAL" in valor and "COBR" in valor:
+        return True
+    return False
+
+
+def cell_str(linha: pd.Series, idx: int) -> str:
+    """Retorna o valor da célula como string limpa"""
+    if len(linha) <= idx or pd.isna(linha.iloc[idx]):
+        return ""
+    return str(linha.iloc[idx]).strip()
+
+
+def is_total_linha(linha: pd.Series) -> bool:
+    """Detecta linha de totais no formato novo"""
+    texto = " ".join(cell_str(linha, i) for i in range(min(len(linha), 6))).upper()
+    if not texto:
+        return False
+    return any(chave in texto for chave in [
+        "TOTAL CRÉDITO",
+        "TOTAL CREDITO",
+        "TOTAL DÉBITO",
+        "TOTAL DEBITO",
+        "TOTAL POR TITULAR",
+        "TOTAL GERAL",
+        "TOTAL COBR"
+    ])
+
+
+def is_quantidade_valida(valor: str) -> bool:
+    """Detecta quantidade no formato com vírgula (ex: 1,0000)"""
+    if not valor:
+        return False
+    valor = str(valor).strip()
+    if "," not in valor:
+        return False
+    try:
+        float(valor.replace(",", "."))
+        return True
+    except ValueError:
+        return False
+
+
+def extrair_consultas_beneficiario_novo(
+    df: pd.DataFrame,
+    inicio_idx: int,
+    coluna_evento: int,
+    coluna_quantidade: int,
+    coluna_data: int,
+    coluna_valor: int,
+    titular_atual: Titular,
+) -> int:
+    """Varre linhas até próximo titular/beneficiário e extrai consultas"""
+    idx = inicio_idx
+    while idx < len(df):
+        row = df.iloc[idx]
+        valor_evento = row.iloc[coluna_evento] if len(row) > coluna_evento else None
+        if pd.isna(valor_evento):
+            idx += 1
+            continue
+
+        texto_evento = str(valor_evento).strip()
+        if "Cód Titular:" in texto_evento or "Beneficiário:" in texto_evento:
+            break
+
+        if is_total_linha(row) or is_cabecalho_detalhe(row, coluna_quantidade, coluna_data, coluna_valor):
+            idx += 1
+            continue
+
+        quantidade = cell_str(row, coluna_quantidade)
+        if is_quantidade_valida(quantidade):
+            data = cell_str(row, coluna_data)
+            valor = cell_str(row, coluna_valor)
+            if data and valor and not data.upper().startswith("DT."):
+                consulta = Consulta("", quantidade, data, "", valor)
+                titular_atual.adicionar_consulta_ao_beneficiario_atual(consulta)
+        idx += 1
+
+    return idx
+
+
+def is_evento_novo(linha: pd.Series, coluna_evento: int, coluna_data: int) -> bool:
+    """Detecta a linha 1 do registro de transação (evento) no formato novo"""
+    evento = cell_str(linha, coluna_evento)
+    data = cell_str(linha, coluna_data)
+    if not evento:
+        return False
+    if data:
+        return False
+    return is_numero(evento)
+
+
+def is_detalhe_novo(linha: pd.Series, coluna_quantidade: int, coluna_data: int, coluna_valor: int) -> bool:
+    """Detecta a linha 2 do registro de transação (detalhes) no formato novo"""
+    quantidade = cell_str(linha, coluna_quantidade)
+    data = cell_str(linha, coluna_data)
+    valor = cell_str(linha, coluna_valor)
+    if not quantidade or not data or not valor:
+        return False
+    if data.upper().startswith("DT."):
+        return False
+    if not is_numero(quantidade) or not is_numero(valor):
+        return False
+    return True
+
+
 def processar_xlsx(caminho_xlsx: Path) -> List[Titular]:
     """
     Processa o arquivo Excel (.xls ou .xlsx) e retorna lista de titulares com suas consultas
@@ -166,6 +295,7 @@ def processar_xlsx(caminho_xlsx: Path) -> List[Titular]:
         coluna_data = None
         coluna_servico = None
         coluna_valor = None
+        formato_novo = False
         
         # Procurar cabeçalhos
         for idx, row in df.iterrows():
@@ -173,53 +303,79 @@ def processar_xlsx(caminho_xlsx: Path) -> List[Titular]:
             if primeira_col.upper() == "EVENTO":
                 # Esta linha tem os nomes das colunas
                 coluna_evento = 0
+                # Detectar formato novo (cabeçalho em duas linhas)
+                segunda_linha = df.iloc[idx + 1] if idx + 1 < len(df) else None
+                if segunda_linha is not None:
+                    qtde = str(segunda_linha.iloc[0]).strip() if len(segunda_linha) > 0 else ""
+                    dt_real = str(segunda_linha.iloc[1]).strip() if len(segunda_linha) > 1 else ""
+                    total_cobr = str(segunda_linha.iloc[2]).strip() if len(segunda_linha) > 2 else ""
+                    if qtde.upper() == "QTDE" and dt_real.upper().startswith("DT."):
+                        formato_novo = True
+                        coluna_quantidade = 0
+                        coluna_data = 1
+                        coluna_servico = 2
+                        # Nos dados o Total Cobr. vem na coluna D (índice 3)
+                        coluna_valor = 3
+                        break
+                # Formato antigo (prestador em linha única)
                 coluna_quantidade = 1
                 coluna_data = 2
                 coluna_servico = 3
                 coluna_valor = 4
                 break
         
-        # Se não encontrou cabeçalho, assumir posições padrão
+        # Se não encontrou cabeçalho, assumir posições padrão (formato antigo)
         if coluna_evento is None:
             coluna_evento = 0
             coluna_quantidade = 1
             coluna_data = 2
             coluna_servico = 3
             coluna_valor = 4
+
+        # Fallback: detectar formato novo mesmo sem "Evento"
+        if not formato_novo:
+            for _, row in df.iterrows():
+                col0 = str(row.iloc[0]).strip() if len(row) > 0 and not pd.isna(row.iloc[0]) else ""
+                col1 = str(row.iloc[1]).strip() if len(row) > 1 and not pd.isna(row.iloc[1]) else ""
+                if col0.upper() == "QTDE" and col1.upper().startswith("DT."):
+                    formato_novo = True
+                    coluna_evento = 0
+                    coluna_quantidade = 0
+                    coluna_data = 1
+                    coluna_servico = 2
+                    coluna_valor = 3
+                    break
         
         titulares: List[Titular] = []
         titular_atual: Optional[Titular] = None
         
         # Processar linha por linha
-        for idx, row in df.iterrows():
+        idx = 0
+        while idx < len(df):
+            row = df.iloc[idx]
             # Verificar se a célula existe e não é NaN antes de converter para string
             if len(row) <= coluna_evento:
+                idx += 1
                 continue
             
             valor_evento = row.iloc[coluna_evento]
             
             # Ignorar se for NaN do pandas
             if pd.isna(valor_evento):
+                idx += 1
                 continue
-            
-            # Ignorar se for apenas números (códigos, números de linha, etc.)
-            try:
-                # Tentar converter para número - se conseguir, é apenas número
-                float(str(valor_evento).strip())
-                continue
-            except (ValueError, TypeError):
-                # Não é número, continuar processamento
-                pass
             
             evento = str(valor_evento)
             evento_upper = evento.upper().strip()
             
             # Ignorar linhas de cabeçalho (podem aparecer múltiplas vezes)
             if evento_upper in ["EVENTO", "PRESTADOR"]:
+                idx += 1
                 continue
             
             # Ignorar linhas vazias ou com valores irrelevantes (incluindo "nan")
             if is_ignored_value(evento):
+                idx += 1
                 continue
             
             # Verificar se é um titular
@@ -228,6 +384,7 @@ def processar_xlsx(caminho_xlsx: Path) -> List[Titular]:
                 titular_atual = Titular(nome_titular)
                 titulares.append(titular_atual)
                 logger.debug(f"Encontrado titular: {nome_titular}")
+                idx += 1
                 continue
             
             # Verificar se é um beneficiário
@@ -235,6 +392,74 @@ def processar_xlsx(caminho_xlsx: Path) -> List[Titular]:
             if nome_beneficiario and titular_atual:
                 titular_atual.adicionar_beneficiario(nome_beneficiario)
                 logger.debug(f"Encontrado beneficiário: {nome_beneficiario} (titular: {titular_atual.nome})")
+                if formato_novo:
+                    idx = extrair_consultas_beneficiario_novo(
+                        df,
+                        idx + 1,
+                        coluna_evento,
+                        coluna_quantidade,
+                        coluna_data,
+                        coluna_valor,
+                        titular_atual,
+                    )
+                    continue
+                idx += 1
+                continue
+            
+            # Formato novo: pular linha de cabeçalho repetida
+            if formato_novo and is_cabecalho_detalhe(row, coluna_quantidade, coluna_data, coluna_valor):
+                idx += 1
+                continue
+
+            # Formato novo: evento em uma linha e detalhes na próxima
+            if formato_novo and titular_atual:
+                # Ignorar linhas de totais no formato novo
+                if is_total_linha(row):
+                    idx += 1
+                    continue
+
+                # Linha do evento tem código numérico na coluna A
+                if is_evento_novo(row, coluna_evento, coluna_data):
+                    if idx + 1 < len(df):
+                        row_det = df.iloc[idx + 1]
+                    else:
+                        row_det = None
+
+                    if row_det is None or is_total_linha(row_det) or is_cabecalho_detalhe(row_det, coluna_quantidade, coluna_data, coluna_valor):
+                        idx += 1
+                        continue
+
+                    servico = cell_str(row, coluna_servico)
+                    quantidade = cell_str(row_det, coluna_quantidade)
+                    data = cell_str(row_det, coluna_data)
+                    valor = cell_str(row_det, coluna_valor)
+
+                    if not quantidade or not data or not valor:
+                        idx += 1
+                        continue
+                    if data.upper().startswith("DT."):
+                        idx += 1
+                        continue
+
+                    if is_ignored_value(servico):
+                        servico = ""
+                    consulta = Consulta("", quantidade, data, servico, valor)
+                    titular_atual.adicionar_consulta_ao_beneficiario_atual(consulta)
+                    logger.debug(f"Adicionada consulta (formato novo): {servico} - {data} - {valor}")
+                    idx += 2
+                    continue
+
+                idx += 1
+                continue
+            
+            # Formato novo: ignorar qualquer outra linha não processada
+            if formato_novo:
+                idx += 1
+                continue
+
+            # Formato antigo: ignorar linhas numéricas isoladas
+            if is_numero(valor_evento):
+                idx += 1
                 continue
             
             # Verificar se é um prestador (linha com dados de consulta)
@@ -254,6 +479,8 @@ def processar_xlsx(caminho_xlsx: Path) -> List[Titular]:
                 consulta = Consulta(prestador, quantidade, data, servico, valor)
                 titular_atual.adicionar_consulta_ao_beneficiario_atual(consulta)
                 logger.debug(f"Adicionada consulta: {prestador} - {data} - {valor}")
+            
+            idx += 1
         
         logger.info(f"Processados {len(titulares)} titulares do arquivo Excel")
         return titulares

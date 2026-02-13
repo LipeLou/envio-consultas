@@ -5,10 +5,8 @@ Processa planilha Excel (.xls ou .xlsx) com consultas e envia emails para cada t
 """
 import logging
 import sys
-import csv
-import datetime
 from pathlib import Path
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional
 from config.config import LOG_FORMAT, XLSX_CONSULTAS_PATH, LOGS_DIR
 from src.email_utils import ler_emails_csv, normalizar_nome
 from src.xlsx_parser import processar_xlsx, Titular
@@ -107,9 +105,6 @@ def processar_e_enviar(caminho_xlsx: Path, caminho_csv: Optional[Path] = None):
     emails_falhados = 0
     titulares_sem_email = 0
     
-    # Lista de erros para relatório
-    erros_relatorio = []
-    
     # Processar cada titular
     logger.info(f"\nProcessando {total_titulares} titulares...")
     logger.info("-" * 60)
@@ -134,12 +129,6 @@ def processar_e_enviar(caminho_xlsx: Path, caminho_csv: Optional[Path] = None):
             logger.warning(f"  - ⚠️ EMAIL NÃO ENCONTRADO para: {titular.nome}")
             logger.warning(f"  - Nome normalizado buscado: '{nome_buscado}'")
             titulares_sem_email += 1
-            erros_relatorio.append({
-                "titular": titular.nome,
-                "motivo": "Email não encontrado",
-                "detalhe": f"Nome normalizado: {nome_buscado}",
-                "email": ""
-            })
             continue
         
         logger.info(f"  - Email encontrado: {email_titular}")
@@ -150,12 +139,6 @@ def processar_e_enviar(caminho_xlsx: Path, caminho_csv: Optional[Path] = None):
         except Exception as e:
             logger.error(f"  - Erro ao gerar HTML: {e}")
             emails_falhados += 1
-            erros_relatorio.append({
-                "titular": titular.nome,
-                "motivo": "Erro na geração do HTML",
-                "detalhe": str(e),
-                "email": email_titular
-            })
             continue
         
         # Enviar email
@@ -168,29 +151,7 @@ def processar_e_enviar(caminho_xlsx: Path, caminho_csv: Optional[Path] = None):
         else:
             emails_falhados += 1
             logger.error(f"  - ✗ Falha ao enviar email")
-            erros_relatorio.append({
-                "titular": titular.nome,
-                "motivo": "Falha no envio SMTP",
-                "detalhe": "Verificar logs para erro específico do SMTP",
-                "email": email_titular
-            })
     
-    # Gerar relatório de erros se houver falhas
-    if erros_relatorio:
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        arquivo_relatorio = LOGS_DIR / f"nao_enviados_{timestamp}.csv"
-        
-        try:
-            with open(arquivo_relatorio, mode='w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=["titular", "motivo", "detalhe", "email"])
-                writer.writeheader()
-                writer.writerows(erros_relatorio)
-            
-            logger.info(f"\n⚠️  Relatório de emails não enviados salvo em:")
-            logger.info(f"   -> {arquivo_relatorio}")
-        except Exception as e:
-            logger.error(f"Erro ao salvar relatório de erros: {e}")
-
     # Resumo final
     logger.info("\n" + "=" * 60)
     logger.info("RESUMO DO PROCESSAMENTO")

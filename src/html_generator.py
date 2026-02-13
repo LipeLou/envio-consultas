@@ -2,9 +2,8 @@
 Gerador de HTML para emails de consultas
 """
 import logging
-from typing import List
 from src.xlsx_parser import Titular, Beneficiario, Consulta
-from config.config import MES_RELATORIO
+from config.config import MES_RELATORIO, LOGO_URL
 
 logger = logging.getLogger(__name__)
 
@@ -44,13 +43,18 @@ def gerar_html_consultas(titular: Titular) -> str:
     # Usar mês configurado manualmente
     mes_atual = MES_RELATORIO
     
+    # Construir tag da logo
+    img_tag = ""
+    if LOGO_URL:
+        img_tag = f'<img src="{LOGO_URL}" alt="Logo" style="max-width: 100px; max-height: 60px; float: right; margin-left: 20px;">'
+
     html = f"""
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consultas - {titular.nome}</title>
+    <title>Consultas UNIMED</title>
     <style>
         body {{
             font-family: Arial, sans-serif;
@@ -67,11 +71,16 @@ def gerar_html_consultas(titular: Titular) -> str:
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }}
-        h1 {{
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
+        .header-container {{
+            border-bottom: 3px solid #06679a;
             padding-bottom: 10px;
             margin-bottom: 20px;
+            overflow: hidden;
+        }}
+        h1 {{
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
         }}
         h2 {{
             color: #34495e;
@@ -86,7 +95,7 @@ def gerar_html_consultas(titular: Titular) -> str:
             background-color: #fff;
         }}
         th {{
-            background-color: #3498db;
+            background-color: #006600;
             color: white;
             padding: 12px;
             text-align: left;
@@ -105,17 +114,9 @@ def gerar_html_consultas(titular: Titular) -> str:
         .valor {{
             text-align: right;
             font-weight: bold;
-            color: #27ae60;
         }}
         .data {{
             white-space: nowrap;
-        }}
-        .servico {{
-            color: #555;
-        }}
-        .prestador {{
-            font-weight: 500;
-            color: #2c3e50;
         }}
         .total {{
             background-color: #ecf0f1;
@@ -134,14 +135,17 @@ def gerar_html_consultas(titular: Titular) -> str:
             margin-bottom: 30px;
             padding: 15px;
             background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid #006600;
             border-radius: 5px;
         }}
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Relatório de Consultas - {mes_atual}</h1>
+        <div class="header-container">
+            {img_tag}
+            <h1>Relatório de Consultas UNIMED - {mes_atual}</h1>
+        </div>
         <p><strong>Titular:</strong> {titular.nome}</p>
 """
     
@@ -159,9 +163,7 @@ def gerar_html_consultas(titular: Titular) -> str:
             <table>
                 <thead>
                     <tr>
-                        <th>Prestador</th>
                         <th>Data</th>
-                        <th>Serviço</th>
                         <th>Quantidade</th>
                         <th class="valor">Valor</th>
                     </tr>
@@ -183,9 +185,7 @@ def gerar_html_consultas(titular: Titular) -> str:
             
             html += f"""
                     <tr>
-                        <td class="prestador">{consulta.prestador}</td>
                         <td class="data">{formatar_data(consulta.data)}</td>
-                        <td class="servico">{consulta.servico}</td>
                         <td>{consulta.quantidade}</td>
                         <td class="valor">{formatar_valor(consulta.valor)}</td>
                     </tr>
@@ -195,7 +195,7 @@ def gerar_html_consultas(titular: Titular) -> str:
                 </tbody>
                 <tfoot>
                     <tr class="total">
-                        <td colspan="4" style="text-align: right;"><strong>Total do Beneficiário:</strong></td>
+                        <td colspan="2" style="text-align: right;"><strong>Total do Beneficiário:</strong></td>
                         <td class="valor">{formatar_valor(str(total_beneficiario))}</td>
                     </tr>
                 </tfoot>
@@ -208,7 +208,7 @@ def gerar_html_consultas(titular: Titular) -> str:
         <table>
             <tfoot>
                 <tr class="total">
-                    <td colspan="4" style="text-align: right;"><strong>TOTAL GERAL:</strong></td>
+                    <td colspan="2" style="text-align: right;"><strong>TOTAL GERAL:</strong></td>
                     <td class="valor">{formatar_valor(str(total_geral))}</td>
                 </tr>
             </tfoot>

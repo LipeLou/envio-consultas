@@ -15,6 +15,10 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 EMAIL_REMETENTE = "seu_email@gmail.com"  # ALTERE AQUI: Configure seu email remetente
 
+# URL da Logo da empresa (para o cabeçalho do email)
+# Deixe vazio ("") para não exibir logo
+LOGO_URL = ""
+
 # Mês/ano a ser exibido no relatório
 MES_RELATORIO = ""  # ALTERE AQUI: Configure o mês/ano do relatório
 
