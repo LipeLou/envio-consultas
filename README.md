@@ -123,12 +123,15 @@ MARIA SANTOS;maria@example.com;
 
 ### 5. Personalizar Caminhos (Opcional)
 
-Se necessário, ajuste os caminhos no arquivo `config/config.py`:
+Se necessário, ajuste os caminhos no arquivo `config/config.py`. Você também pode configurar o separador do arquivo CSV (padrão é ponto e vírgula):
 
 ```python
 DATA_DIR = BASE_DIR / "data"
 CSV_EMAILS_PATH = DATA_DIR / "email.csv"
 XLSX_CONSULTAS_PATH = DATA_DIR / "consultas.xls"
+
+# Configurações de processamento
+CSV_DELIMITER = ";"  # Separador do CSV (ex: "," ou ";")
 ```
 
 ## Uso
