@@ -6,7 +6,7 @@ import re
 import logging
 from pathlib import Path
 from typing import Dict, Optional
-from config.config import CSV_EMAILS_PATH
+from config.config import CSV_EMAILS_PATH, CSV_DELIMITER
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def ler_emails_csv(caminho_csv: Optional[Path] = None) -> Dict[str, str]:
         
         for encoding in encodings:
             try:
-                df = pd.read_csv(caminho_csv, sep=';', encoding=encoding)
+                df = pd.read_csv(caminho_csv, sep=CSV_DELIMITER, encoding=encoding)
                 encoding_usado = encoding
                 logger.debug(f"CSV lido com sucesso usando encoding: {encoding}")
                 break

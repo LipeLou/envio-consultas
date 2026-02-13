@@ -41,6 +41,7 @@ CSV_EMAILS_PATH = DATA_DIR / "email.csv"
 XLSX_CONSULTAS_PATH = DATA_DIR / "consultas.xls"
 
 # Configurações de processamento
+CSV_DELIMITER = ";"  # Separador do arquivo CSV de emails (padrão: ponto e vírgula)
 IGNORE_VALUES = ["inrrelevante", "Evento", "Prestador", "", "nan", "NaN", "None", "none"]
 
 # Configurações de logging
